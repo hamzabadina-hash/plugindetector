@@ -35,35 +35,20 @@ public class PluginDetectorClient implements ClientModInitializer {
         "floodgate", "discordsrv", "dynmap", "bluemap", "squaremap",
         "cmi", "nucleus", "redisbungee", "spark", "paper", "purpur",
         "folia", "spigot", "waterfall", "wildstacker", "crazycrates",
-        "excellentcrates", "quests", "betonquest", "imageonmap",
-        "itemsadder", "oraxen", "superiorskyblock", "iridiumskyblock",
-        "prison", "rankup", "combatlog", "pvpmanager", "minepacks",
-        "headdb", "chest", "hopper", "autorank", "automessage"
+        "excellentcrates", "quests", "betonquest", "itemsadder", "oraxen",
+        "superiorskyblock", "iridiumskyblock", "prison", "rankup",
+        "combatlog", "pvpmanager", "minepacks", "headdb", "autorank"
     };
 
     @Override
     public void onInitializeClient() {
         LOGGER.info("Plugin Detector loaded! Use /server plugins");
 
-        // Clear on join/disconnect
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             detectedChannels.clear();
             detectedPlugins.clear();
 
-            // Read server brand
             client.execute(() -> {
-                try {
-                    if (handler.getBrand() != null) {
-                        detectedPlugins.add("Brand: " + handler.getBrand());
-                    }
-                } catch (Exception ignored) {}
-            });
-
-            // Scan registered channels from the connection
-            client.execute(() -> {
-                try {
-                    
-                // Try to read plugin channels via reflection
                 try {
                     java.lang.reflect.Field[] fields = handler.getClass().getDeclaredFields();
                     for (java.lang.reflect.Field field : fields) {
@@ -98,7 +83,6 @@ public class PluginDetectorClient implements ClientModInitializer {
             detectedPlugins.clear();
         });
 
-        // Register commands
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
             dispatcher.register(
                 ClientCommandManager.literal("server")
@@ -148,13 +132,11 @@ public class PluginDetectorClient implements ClientModInitializer {
     private void showPlugins(MinecraftClient client) {
         if (client.player == null) return;
 
-        // Do a live scan first
         doLiveScan(client);
 
         client.player.sendMessage(
             Text.literal("=== Plugin Detector ===").formatted(Formatting.GOLD), false);
 
-        // Show server brand
         if (client.getNetworkHandler() != null) {
             String brand = client.getNetworkHandler().getBrand();
             if (brand != null && !brand.isEmpty()) {
@@ -166,14 +148,12 @@ public class PluginDetectorClient implements ClientModInitializer {
 
         if (detectedPlugins.isEmpty() && detectedChannels.isEmpty()) {
             client.player.sendMessage(
-                Text.literal("No plugins detected. Try /server scan to probe the server.")
+                Text.literal("No plugins detected. Try /server scan")
                     .formatted(Formatting.RED), false);
             return;
         }
 
-        // Show plugins
         List<String> plugins = new ArrayList<>(detectedPlugins);
-        plugins.removeIf(p -> p.startsWith("Brand:"));
         java.util.Collections.sort(plugins);
 
         if (!plugins.isEmpty()) {
@@ -184,7 +164,6 @@ public class PluginDetectorClient implements ClientModInitializer {
                     .formatted(Formatting.WHITE)), false);
         }
 
-        // Show raw channels
         if (!detectedChannels.isEmpty()) {
             List<String> channels = new ArrayList<>(detectedChannels);
             java.util.Collections.sort(channels);
@@ -202,7 +181,7 @@ public class PluginDetectorClient implements ClientModInitializer {
         if (client.player == null || client.getNetworkHandler() == null) return;
         String brand = client.getNetworkHandler().getBrand();
         client.player.sendMessage(
-            Text.literal("Server brand: ").formatted(Formatting.YELLOW)
+            Text.literal("Server: ").formatted(Formatting.YELLOW)
                 .append(Text.literal(brand != null ? brand : "Unknown")
                 .formatted(Formatting.WHITE)), false);
     }
@@ -211,15 +190,15 @@ public class PluginDetectorClient implements ClientModInitializer {
         if (client.player == null) return;
         doLiveScan(client);
         client.player.sendMessage(
-            Text.literal("Scan complete! Found " + detectedChannels.size()
-                + " channels, " + detectedPlugins.size() + " plugins. Use /server plugins to view.")
+            Text.literal("Scan done! " + detectedChannels.size()
+                + " channels, " + detectedPlugins.size()
+                + " plugins. Use /server plugins to view.")
                 .formatted(Formatting.GREEN), false);
     }
 
     private void doLiveScan(MinecraftClient client) {
         if (client.getNetworkHandler() == null) return;
         try {
-            // Deep reflection scan of network handler for channel data
             scanObject(client.getNetworkHandler(), 0);
         } catch (Exception ignored) {}
     }
