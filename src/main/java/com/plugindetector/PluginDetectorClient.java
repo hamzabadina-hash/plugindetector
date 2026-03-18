@@ -62,13 +62,7 @@ public class PluginDetectorClient implements ClientModInitializer {
             // Scan registered channels from the connection
             client.execute(() -> {
                 try {
-                    // Get channels from the network handler's known channels
-                    var knownChannels = handler.getCustomPayloadCodec();
-                    if (knownChannels != null) {
-                        LOGGER.info("Found channel codec");
-                    }
-                } catch (Exception ignored) {}
-
+                    
                 // Try to read plugin channels via reflection
                 try {
                     java.lang.reflect.Field[] fields = handler.getClass().getDeclaredFields();
