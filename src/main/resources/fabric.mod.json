@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "plugindetector",
+  "version": "${version}",
+  "name": "Plugin Detector",
+  "description": "Detect server plugins with /server plugins",
+  "authors": ["plugindetector"],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["com.plugindetector.PluginDetectorClient"]
+  },
+  "mixins": [],
+  "depends": {
+    "fabricloader": ">=0.16.14",
+    "fabric-api": "*",
+    "minecraft": "~1.21.4",
+    "java": ">=21"
+  }
+}
